@@ -1,12 +1,11 @@
-import React from 'react';
-import { type InsertEvent } from '@shared/schema';
-import { format } from 'date-fns';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { MapPin, Clock, AlignLeft } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { type InsertEvent } from "@shared/schema";
+import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MapPin, Clock, AlignLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface EventCardProps {
   event: Partial<InsertEvent>;
@@ -23,72 +22,77 @@ export function EventCard({ event, isSelected, onToggle, onChange }: EventCardPr
   };
 
   return (
-    <div 
+    <div
       className={cn(
         "group relative rounded-xl border bg-card p-5 transition-all duration-300 hover:shadow-lg",
-        isSelected 
-          ? "border-primary/50 bg-primary/5 shadow-md shadow-primary/10" 
-          : "border-border shadow-sm hover:border-primary/20"
+        isSelected
+          ? "border-primary/50 bg-primary/5 shadow-md shadow-primary/10"
+          : "border-border shadow-sm hover:border-primary/20",
       )}
     >
-      {/* Selection Checkbox */}
+      {/* Auswahl-Checkbox */}
       <div className="absolute left-4 top-4 z-10">
-        <Checkbox 
-          checked={isSelected} 
+        <Checkbox
+          checked={isSelected}
           onCheckedChange={(c) => onToggle(!!c)}
           className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+          aria-label="Termin auswählen"
         />
       </div>
 
       <div className="ml-8 space-y-4">
-        {/* Header: Summary & Location */}
+        {/* Kopf: Titel & Ort */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <Input
             value={event.summary || ""}
             onChange={(e) => onChange({ summary: e.target.value })}
             className="border-transparent bg-transparent text-lg font-semibold placeholder:text-muted-foreground/50 hover:bg-background/50 focus:bg-background focus:ring-1 focus:ring-primary/20"
-            placeholder="Event Summary"
+            placeholder="Bezeichnung (z. B. Heilige Messe)"
+            aria-label="Bezeichnung"
           />
-          
+
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="h-4 w-4 shrink-0 text-primary/70" />
             <Input
               value={event.location || ""}
               onChange={(e) => onChange({ location: e.target.value })}
               className="h-8 border-transparent bg-transparent text-sm hover:bg-background/50 focus:bg-background focus:ring-1 focus:ring-primary/20"
-              placeholder="Location"
+              placeholder="Ort"
+              aria-label="Ort"
             />
           </div>
         </div>
 
-        {/* Time Inputs */}
+        {/* Zeit */}
         <div className="flex flex-col gap-3 rounded-lg bg-muted/30 p-3 sm:flex-row sm:items-center">
           <Clock className="hidden h-4 w-4 text-muted-foreground sm:block" />
-          
+
           <div className="flex flex-1 flex-col gap-1">
-            <label className="text-xs font-medium text-muted-foreground">Start</label>
+            <label className="text-xs font-medium text-muted-foreground">Beginn</label>
             <Input
               type="datetime-local"
               value={toInputFormat(event.start)}
               onChange={(e) => onChange({ start: new Date(e.target.value) })}
               className="h-8 bg-background text-sm font-medium"
+              aria-label="Beginn"
             />
           </div>
-          
+
           <div className="hidden text-muted-foreground/30 sm:block">→</div>
-          
+
           <div className="flex flex-1 flex-col gap-1">
-            <label className="text-xs font-medium text-muted-foreground">End</label>
+            <label className="text-xs font-medium text-muted-foreground">Ende</label>
             <Input
               type="datetime-local"
               value={toInputFormat(event.end)}
               onChange={(e) => onChange({ end: new Date(e.target.value) })}
               className="h-8 bg-background text-sm font-medium"
+              aria-label="Ende"
             />
           </div>
         </div>
 
-        {/* Description */}
+        {/* Hinweise / Beschreibung */}
         <div className="relative">
           <div className="absolute left-3 top-3">
             <AlignLeft className="h-4 w-4 text-muted-foreground/50" />
@@ -97,7 +101,8 @@ export function EventCard({ event, isSelected, onToggle, onChange }: EventCardPr
             value={event.description || ""}
             onChange={(e) => onChange({ description: e.target.value })}
             className="min-h-[60px] resize-y bg-background/50 pl-10 text-sm focus:bg-background"
-            placeholder="Description..."
+            placeholder="Hinweise (optional) …"
+            aria-label="Hinweise"
           />
         </div>
       </div>

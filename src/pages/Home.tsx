@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { UploadZone } from '@/components/UploadZone';
-import { EventCard } from '@/components/EventCard';
-import { extractEventsFromPdf } from '@/lib/pdf-parser';
-import { generateICS } from '@/lib/ics-generator';
-import { type InsertEvent } from '@shared/schema';
-import { Button } from '@/components/ui/button';
-import { saveAs } from 'file-saver';
-import { Download, Trash2, Calendar, RefreshCcw, CheckSquare, Square } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import { UploadZone } from "@/components/UploadZone";
+import { EventCard } from "@/components/EventCard";
+import { extractEventsFromPdf } from "@/lib/pdf-parser";
+import { generateICS } from "@/lib/ics-generator";
+import { type InsertEvent } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { saveAs } from "file-saver";
+import { Download, Calendar, RefreshCcw, CheckSquare, Square } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [events, setEvents] = useState<Partial<InsertEvent>[]>([]);
@@ -19,28 +19,30 @@ export default function Home() {
     setIsProcessing(true);
     try {
       const extracted = await extractEventsFromPdf(file, year);
-      
+
       if (extracted.length === 0) {
         toast({
           variant: "destructive",
-          title: "No events found",
-          description: "Could not identify any events matching the expected format.",
+          title: "Keine Termine gefunden",
+          description:
+            "Es konnten keine Termine erkannt werden. Prüfe bitte, ob das PDF dem erwarteten Format entspricht.",
         });
       } else {
         setEvents(extracted);
-        // Select all by default
+        // standardmäßig alles auswählen
         setSelectedIndices(new Set(extracted.map((_, i) => i)));
+
         toast({
-          title: "Success!",
-          description: `Found ${extracted.length} events from the PDF.`,
+          title: "Import erfolgreich",
+          description: `Es wurden ${extracted.length} Termine aus dem PDF erkannt.`,
         });
       }
     } catch (e) {
       console.error(e);
       toast({
         variant: "destructive",
-        title: "Parsing Error",
-        description: "Failed to read the PDF file.",
+        title: "Fehler beim Einlesen",
+        description: "Das PDF konnte nicht verarbeitet werden.",
       });
     } finally {
       setIsProcessing(false);
@@ -49,12 +51,12 @@ export default function Home() {
 
   const handleExport = () => {
     const selectedEvents = events.filter((_, i) => selectedIndices.has(i));
-    
+
     if (selectedEvents.length === 0) {
       toast({
         variant: "destructive",
-        title: "Nothing to export",
-        description: "Please select at least one event.",
+        title: "Keine Auswahl",
+        description: "Bitte wähle mindestens einen Termin aus.",
       });
       return;
     }
@@ -62,17 +64,18 @@ export default function Home() {
     try {
       const icsContent = generateICS(selectedEvents);
       const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-      saveAs(blob, "church-calendar.ics");
-      
+      saveAs(blob, "gottesdienst-kalender.ics");
+
       toast({
-        title: "Export Complete",
-        description: `Downloaded calendar with ${selectedEvents.length} events.`,
+        title: "Export abgeschlossen",
+        description: `Kalenderdatei mit ${selectedEvents.length} Terminen wurde heruntergeladen.`,
       });
     } catch (e) {
+      console.error(e);
       toast({
         variant: "destructive",
-        title: "Export Failed",
-        description: "Could not generate the ICS file.",
+        title: "Export fehlgeschlagen",
+        description: "Die ICS-Datei konnte nicht erstellt werden.",
       });
     }
   };
@@ -85,11 +88,8 @@ export default function Home() {
 
   const toggleSelection = (index: number, checked: boolean) => {
     const newSet = new Set(selectedIndices);
-    if (checked) {
-      newSet.add(index);
-    } else {
-      newSet.delete(index);
-    }
+    if (checked) newSet.add(index);
+    else newSet.delete(index);
     setSelectedIndices(newSet);
   };
 
@@ -102,13 +102,12 @@ export default function Home() {
   };
 
   const reset = () => {
-    if (confirm("Are you sure? This will clear all parsed events.")) {
+    if (confirm("Alles zurücksetzen? Dadurch werden alle erkannten Termine entfernt.")) {
       setEvents([]);
       setSelectedIndices(new Set());
     }
   };
 
-  // Render
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
@@ -122,16 +121,25 @@ export default function Home() {
               PDF2Cal
             </span>
           </div>
-          
+
           {events.length > 0 && (
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground hover:text-destructive">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={reset}
+                className="text-muted-foreground hover:text-destructive"
+              >
                 <RefreshCcw className="mr-2 h-4 w-4" />
-                Reset
+                Zurücksetzen
               </Button>
-              <Button onClick={handleExport} className="shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all">
+
+              <Button
+                onClick={handleExport}
+                className="shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all"
+              >
                 <Download className="mr-2 h-4 w-4" />
-                Export ICS ({selectedIndices.size})
+                ICS exportieren ({selectedIndices.size})
               </Button>
             </div>
           )}
@@ -147,16 +155,23 @@ export default function Home() {
           <div className="space-y-6 animate-in">
             <div className="flex items-center justify-between pb-4 border-b">
               <div className="space-y-1">
-                <h2 className="text-2xl font-bold tracking-tight">Review Events</h2>
+                <h2 className="text-2xl font-bold tracking-tight">Termine prüfen</h2>
                 <p className="text-muted-foreground">
-                  Found {events.length} events. Edit details before exporting.
+                  Es wurden {events.length} Termine gefunden. Du kannst Details vor dem Export bearbeiten.
                 </p>
               </div>
+
               <Button variant="outline" size="sm" onClick={toggleAll}>
                 {selectedIndices.size === events.length ? (
-                  <><Square className="mr-2 h-4 w-4" /> Deselect All</>
+                  <>
+                    <Square className="mr-2 h-4 w-4" />
+                    Auswahl aufheben
+                  </>
                 ) : (
-                  <><CheckSquare className="mr-2 h-4 w-4" /> Select All</>
+                  <>
+                    <CheckSquare className="mr-2 h-4 w-4" />
+                    Alle auswählen
+                  </>
                 )}
               </Button>
             </div>
@@ -175,9 +190,13 @@ export default function Home() {
             </div>
 
             <div className="flex justify-center pt-8 pb-20">
-              <Button size="lg" onClick={handleExport} className="px-8 shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <Button
+                size="lg"
+                onClick={handleExport}
+                className="px-8 shadow-xl hover:-translate-y-1 transition-all duration-300"
+              >
                 <Download className="mr-2 h-5 w-5" />
-                Download Calendar File
+                Kalenderdatei herunterladen
               </Button>
             </div>
           </div>
